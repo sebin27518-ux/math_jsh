@@ -156,7 +156,7 @@
       getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut
     } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
     import {
-      getFirestore, collection, addDoc, getDocs, getDoc, doc, setDoc, query, orderBy, serverTimestamp
+      getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
     /* --------------------------------------------------------------
@@ -174,6 +174,7 @@
       appId: "1:313836429963:web:9f8c8b7949058a0150ea8e",
       measurementId: "G-E0X5QJE15R"
     };
+
 
     const firebaseApp = initializeApp(firebaseConfig);
     const auth = getAuth(firebaseApp);
@@ -207,9 +208,6 @@
       })(),
       user: null,
       authLoading: true,
-      accessChecking: false,
-      accessGranted: false,
-      accessCodeError: "",
       viewStack: ["home"],
       loading: false,
       errorMsg: "",
@@ -391,27 +389,11 @@ steps 배열은 보통 3~6개이며, 각 항목은 빠짐없이 concept을 포�
     }, { passive: true });
 
     /* --------------------------------------------------------------
-       Firebase 인증 + 참여 코드 승인 확인
-       (실제 정답 코드는 클라이언트 코드가 아니라 Firestore 보안 규칙에만
-        들어있어서, 브라우저 개발자 도구로는 절대 알아낼 수 없어요.)
+       Firebase 인증
     -------------------------------------------------------------- */
-    onAuthStateChanged(auth, async (u) => {
+    onAuthStateChanged(auth, (u) => {
       state.user = u;
       state.authLoading = false;
-      state.accessCodeError = "";
-      if (u) {
-        state.accessChecking = true;
-        render();
-        try {
-          const snap = await getDoc(doc(db, "access", u.uid));
-          state.accessGranted = snap.exists();
-        } catch (e) {
-          state.accessGranted = false; // 규칙에 막히면 미승인으로 처리
-        }
-        state.accessChecking = false;
-      } else {
-        state.accessGranted = false;
-      }
       render();
     });
 
@@ -424,27 +406,10 @@ steps 배열은 보통 3~6개이며, 각 항목은 빠짐없이 concept을 포�
         render();
       }
     }
-
-    async function handleActivateCode(code) {
-      state.accessCodeError = "";
-      try {
-        await setDoc(doc(db, "access", state.user.uid), {
-          code,
-          email: state.user.email || "",
-          activatedAt: serverTimestamp(),
-        });
-        state.accessGranted = true;
-      } catch (e) {
-        state.accessCodeError = "참여 코드가 올바르지 않아요. 다시 확인해주세요.";
-      }
-      render();
-    }
-
     async function handleLogout() {
       await signOut(auth);
       state.viewStack = ["home"];
       state.solution = null;
-      state.accessGranted = false;
       render();
     }
 
@@ -548,19 +513,6 @@ steps 배열은 보통 3~6개이며, 각 항목은 빠짐없이 concept을 포�
           </button>
           ${state.loginError ? `<p class="error-box" style="margin-top:12px;">${escapeHtml(state.loginError)}</p>` : ""}
           <p class="note">이 서비스는 Google 계정으로만 로그인할 수 있어요.</p>
-        </div>`;
-    }
-
-    function renderAccessCodeScreen() {
-      return `
-        <div class="login-screen fade-in wrap">
-          <div class="logo-badge">${icon.sparkles.replace("currentColor", "white")}</div>
-          <h1 class="h1">참여 코드 입력</h1>
-          <p class="sub">이 사이트는 초대받은 사람만 쓸 수 있어요.<br/>받은 참여 코드를 입력해주세요.</p>
-          <input id="accessCodeInput" class="key-input" type="text" placeholder="참여 코드" autocomplete="off" />
-          <button id="submitAccessCodeBtn" class="btn-primary">확인</button>
-          ${state.accessCodeError ? `<p class="error-box" style="margin-top:12px;">${escapeHtml(state.accessCodeError)}</p>` : ""}
-          <button id="accessLogoutBtn" class="btn-google" style="margin-top:14px;">다른 계정으로 로그인</button>
         </div>`;
     }
 
@@ -870,14 +822,6 @@ steps 배열은 보통 3~6개이며, 각 항목은 빠짐없이 concept을 포�
         app.innerHTML = renderLoginScreen();
         return;
       }
-      if (state.accessChecking) {
-        app.innerHTML = `<div class="center-loading" style="min-height:100vh;">${icon.loader}</div>`;
-        return;
-      }
-      if (!state.accessGranted) {
-        app.innerHTML = renderAccessCodeScreen();
-        return;
-      }
 
       const v = currentView();
       let body = "";
@@ -916,16 +860,8 @@ steps 배열은 보통 3~6개이며, 각 항목은 빠짐없이 concept을 포�
        이벤트 위임 (버튼 클릭 / 입력 / 파일 선택)
     -------------------------------------------------------------- */
     app.addEventListener("click", (e) => {
-      const target = e.target.closest("[data-action], #saveKeyBtn, #googleLoginBtn, #solveBtn, #saveSettingsBtn, #resetKeyBtn, #submitAccessCodeBtn, #accessLogoutBtn");
+      const target = e.target.closest("[data-action], #saveKeyBtn, #googleLoginBtn, #solveBtn, #saveSettingsBtn, #resetKeyBtn");
       if (!target) return;
-
-      if (target.id === "submitAccessCodeBtn") {
-        const codeVal = document.getElementById("accessCodeInput").value.trim();
-        if (!codeVal) return;
-        handleActivateCode(codeVal);
-        return;
-      }
-      if (target.id === "accessLogoutBtn") { handleLogout(); return; }
 
       if (target.id === "saveKeyBtn") {
         const val = document.getElementById("apiKeyInput").value.trim();
