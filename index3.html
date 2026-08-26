@@ -9,9 +9,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
 <style>
   :root{
     --green-900:#0f2e1d; --green-700:#166534; --green-600:#16a34a; --green-500:#22c55e;
@@ -166,12 +166,13 @@
        실제 보안은 Firestore 규칙과 Firebase Authentication 설정이 담당합니다.
     -------------------------------------------------------------- */
     const firebaseConfig = {
-      apiKey: "YOUR_FIREBASE_API_KEY",
-      authDomain: "your-project.firebaseapp.com",
-      projectId: "your-project",
-      storageBucket: "your-project.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID",
+      apiKey: "AIzaSyAu-rBt32PbjzbJrdaDHjHZeT8xBfkdG2E",
+      authDomain: "math-c2fee.firebaseapp.com",
+      projectId: "math-c2fee",
+      storageBucket: "math-c2fee.firebasestorage.app",
+      messagingSenderId: "313836429963",
+      appId: "1:313836429963:web:9f8c8b7949058a0150ea8e",
+      measurementId: "G-E0X5QJE15R"
     };
 
     const firebaseApp = initializeApp(firebaseConfig);
@@ -264,13 +265,6 @@
 - "e^(-s)"처럼 괄호로 지수를 쓰지 말고 반드시 "e^{-s}"처럼 LaTeX 문법을 쓰고 $ 로 감싸라.
 - 문장 중간에 수식이 나오면 그 수식 부분만 $...$ 로 감싸고, 한국어 설명 문장은 그대로 둔다.
 - answer와 verification 필드도 이 규칙을 똑같이 따른다.
-- 예시: "content": "이 함수는 $f(x) = \\frac{1}{x^2+1}$ 이며, $x=0$에서 최댓값 $1$을 가진다."
-
-그래프 규칙:
-- 원래 문제에 그래프가 포함되어 있거나, 함수의 개형(주기함수, 절댓값 함수, 이차함수 등)을 눈으로 보는 것이 이해에 크게 도움이 되는 경우에만 graph 필드를 추가하라.
-- 필요 없으면 graph 필드를 절대 넣지 마라 (없음이 기본값).
-- graph.expression은 변수 x에 대한 수식이며, 아래 이름만 사용 가능: sin, cos, tan, asin, acos, atan, abs, exp, sqrt, log, ln, pow, min, max, pi, e, 그리고 + - * / ^ ( ) 연산자. 그 외 문자·함수·따옴표·세미콜론은 절대 쓰지 마라.
-- 예: "abs(sin(x))", "x^2 - 3*x + 1", "1/(x^2+1)"
 
 반드시 아래 JSON 형식으로만 응답하라. 그 외의 설명, 인사말, 마크다운 코드블록 기호는 절대 포함하지 마라.
 
@@ -286,12 +280,6 @@
       }
     }
   ],
-  "graph": {
-    "expression": "sin(x) 같은 x에 대한 수식 (필요 없으면 이 필드 전체를 생략)",
-    "xMin": -10,
-    "xMax": 10,
-    "label": "그래프 위에 표시할 짧은 설명 (예: f(x) = sin(x))"
-  },
   "verification": "최종 답을 원래 문제에 대입하거나 다른 방법으로 재검증한 과정과 결과를 설명 (검증에서 오류를 찾았다면 그것을 고친 내용도 포함)",
   "answer": "검증을 통과한 최종 답 (간결하게)"
 }
@@ -435,7 +423,6 @@ steps 배열은 보통 3~6개이며, 각 항목은 빠짐없이 concept을 포�
             answer: result.answer,
             steps: result.steps,
             verification: result.verification || "",
-            graph: result.graph || null,
             createdAt: serverTimestamp(),
           });
         }
@@ -469,7 +456,7 @@ steps 배열은 보통 3~6개이며, 각 항목은 빠짐없이 concept을 포�
     function openHistoryItem(id) {
       const item = state.historyItems.find((h) => h.id === id);
       if (!item) return;
-      state.solution = { problem: item.problem, answer: item.answer, steps: item.steps, verification: item.verification, graph: item.graph || null };
+      state.solution = { problem: item.problem, answer: item.answer, steps: item.steps, verification: item.verification };
       state.expandedStepIdx = null;
       goTo("solution");
     }
@@ -560,7 +547,7 @@ steps 배열은 보통 3~6개이며, 각 항목은 빠짐없이 concept을 포�
           <p class="section-sub">중학교부터 대학교까지, 사진이나 텍스트로 물어보세요.</p>
 
           <div class="card" style="margin-bottom:16px;">${preview}</div>
-          <input id="fileInput" type="file" accept="image/*" style="display:none" />
+          <input id="fileInput" type="file" accept="image/*" capture="environment" style="display:none" />
 
           <div class="card">
             <label class="field-label">직접 입력 (사진 대신, 또는 보충 설명)</label>
@@ -601,113 +588,6 @@ steps 배열은 보통 3~6개이며, 각 항목은 빠짐없이 concept을 포�
         </div>`;
     }
 
-    /* --------------------------------------------------------------
-       그래프 그리기 (외부 라이브러리 없이, 화이트리스트로 안전하게 계산)
-    -------------------------------------------------------------- */
-    const GRAPH_ALLOWED_NAMES = ["sin","cos","tan","asin","acos","atan","abs","exp","sqrt","log","ln","pow","min","max","pi","e","x"];
-
-    function isSafeMathExpression(expr) {
-      if (typeof expr !== "string" || !expr.trim()) return false;
-      if (!/^[0-9x.\s+\-*/^(),a-zA-Z]*$/.test(expr)) return false;
-      const names = expr.match(/[a-zA-Z]+/g) || [];
-      return names.every((n) => GRAPH_ALLOWED_NAMES.includes(n));
-    }
-
-    function compileSafeExpression(expr) {
-      let js = expr
-        .replace(/\bln\(/g, "Math.log(")
-        .replace(/\blog\(/g, "Math.log10(")
-        .replace(/\b(sin|cos|tan|asin|acos|atan|abs|exp|sqrt|pow|min|max)\(/g, "Math.$1(")
-        .replace(/\bpi\b/g, "Math.PI")
-        .replace(/\be\b/g, "Math.E")
-        .replace(/\^/g, "**");
-      return new Function("x", `"use strict"; return (${js});`);
-    }
-
-    function renderGraphBlock(graph) {
-      if (!graph || !isSafeMathExpression(graph.expression)) return "";
-      return `
-        <div class="card" style="margin-bottom:20px; padding:12px;">
-          ${graph.label ? `<div class="field-label" style="margin-bottom:8px;">📈 ${escapeHtml(graph.label)}</div>` : ""}
-          <canvas id="graphCanvas" style="width:100%; height:220px; display:block;"></canvas>
-        </div>`;
-    }
-
-    function drawGraphIfPresent(graph) {
-      if (!graph || !isSafeMathExpression(graph.expression)) return;
-      const canvas = document.getElementById("graphCanvas");
-      if (!canvas) return;
-
-      let fn;
-      try {
-        fn = compileSafeExpression(graph.expression);
-      } catch (_) {
-        return;
-      }
-
-      const xMin = Number.isFinite(graph.xMin) ? graph.xMin : -10;
-      const xMax = Number.isFinite(graph.xMax) ? graph.xMax : 10;
-      const dpr = window.devicePixelRatio || 1;
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
-      const ctx = canvas.getContext("2d");
-      ctx.scale(dpr, dpr);
-      const W = rect.width, H = rect.height;
-      ctx.clearRect(0, 0, W, H);
-
-      const N = 300;
-      const pts = [];
-      let yMin = Infinity, yMax = -Infinity;
-      for (let i = 0; i <= N; i++) {
-        const x = xMin + ((xMax - xMin) * i) / N;
-        let y;
-        try { y = fn(x); } catch (_) { y = NaN; }
-        if (Number.isFinite(y)) {
-          yMin = Math.min(yMin, y);
-          yMax = Math.max(yMax, y);
-        }
-        pts.push([x, y]);
-      }
-      if (!Number.isFinite(yMin) || !Number.isFinite(yMax)) return;
-      if (yMin === yMax) { yMin -= 1; yMax += 1; }
-      const yPad = (yMax - yMin) * 0.1;
-      yMin -= yPad; yMax += yPad;
-
-      const padL = 34, padR = 10, padT = 10, padB = 22;
-      const plotW = W - padL - padR, plotH = H - padT - padB;
-      const toPx = (x) => padL + ((x - xMin) / (xMax - xMin)) * plotW;
-      const toPy = (y) => padT + (1 - (y - yMin) / (yMax - yMin)) * plotH;
-
-      // 축
-      ctx.strokeStyle = "#bbf7d0";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      if (yMin <= 0 && yMax >= 0) { ctx.moveTo(padL, toPy(0)); ctx.lineTo(W - padR, toPy(0)); }
-      if (xMin <= 0 && xMax >= 0) { ctx.moveTo(toPx(0), padT); ctx.lineTo(toPx(0), H - padB); }
-      ctx.stroke();
-
-      // 곡선
-      ctx.strokeStyle = "#16a34a";
-      ctx.lineWidth = 2.2;
-      ctx.beginPath();
-      let started = false;
-      for (const [x, y] of pts) {
-        if (!Number.isFinite(y)) { started = false; continue; }
-        const px = toPx(x), py = toPy(y);
-        if (!started) { ctx.moveTo(px, py); started = true; }
-        else ctx.lineTo(px, py);
-      }
-      ctx.stroke();
-
-      // 라벨(간단히 x축 최소/최대)
-      ctx.fillStyle = "#5b6b62";
-      ctx.font = "11px sans-serif";
-      ctx.fillText(xMin.toFixed(1), padL, H - 6);
-      ctx.fillText(xMax.toFixed(1), W - padR - 24, H - 6);
-    }
-
-
     function renderSolution() {
       if (state.loading) {
         return `<div class="center-loading">${icon.loader} <p style="margin:0;">문제를 분석하고 있어요...</p></div>`;
@@ -723,7 +603,6 @@ steps 배열은 보통 3~6개이며, 각 항목은 빠짐없이 concept을 포�
             <div class="label">문제</div>
             <p>${escapeHtml(state.solution.problem)}</p>
           </div>
-          ${renderGraphBlock(state.solution.graph)}
           <div class="rail">${steps}</div>
           ${state.solution.verification ? `
             <button class="concept-toggle ${state.expandedStepIdx === "verify" ? "open" : ""}" data-action="toggleVerify" style="margin-bottom:10px;">
@@ -830,27 +709,21 @@ steps 배열은 보통 3~6개이며, 각 항목은 빠짐없이 concept을 포�
 
       app.innerHTML = renderTopBar() + body;
       renderMath();
-      if (v === "solution" && state.solution?.graph) drawGraphIfPresent(state.solution.graph);
     }
 
     // $...$ / $$...$$ 로 감싸진 LaTeX 수식을 실제 수식 모양으로 그려준다.
     function renderMath() {
-      if (typeof window.renderMathInElement !== "function") {
-        console.warn("[수학 풀이] KaTeX가 아직 로드되지 않았어요. 네트워크 상태를 확인해주세요.");
-        return;
-      }
+      if (typeof window.renderMathInElement !== "function") return; // KaTeX 로딩 전이면 그냥 넘어감
       try {
         window.renderMathInElement(app, {
           delimiters: [
             { left: "$$", right: "$$", display: true },
-            { left: "\\[", right: "\\]", display: true },
             { left: "$", right: "$", display: false },
-            { left: "\\(", right: "\\)", display: false },
           ],
           throwOnError: false,
         });
-      } catch (e) {
-        console.warn("[수학 풀이] 수식 렌더링 중 오류:", e);
+      } catch (_) {
+        /* 수식 렌더링 실패는 조용히 무시 (원래 텍스트가 그대로 보임) */
       }
     }
 
