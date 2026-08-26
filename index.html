@@ -1,0 +1,825 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>수학 풀이</title>
+<meta name="description" content="중고등학교부터 대학 수학까지, 사진으로 문제를 올리고 단계별 풀이를 받아보세요." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+<style>
+  :root{
+    --green-900:#0f2e1d; --green-700:#166534; --green-600:#16a34a; --green-500:#22c55e;
+    --green-100:#dcfce7; --green-50:#f3fdf6; --ink:#10241c; --muted:#5b6b62; --line:#bbf7d0;
+    --red:#B91C1C; --red-bg:#FEF2F2;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    font-family:'Noto Sans KR', system-ui, sans-serif;
+    background:var(--green-50); color:var(--ink);
+    -webkit-tap-highlight-color:transparent; overflow-x:hidden;
+  }
+  .display{ font-family:'Space Grotesk','Noto Sans KR',sans-serif; }
+  .mono{ font-family:'JetBrains Mono', monospace; }
+  .wrap{ max-width:480px; margin:0 auto; }
+  .fade-in{ animation: fadeIn .28s ease both; }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+  @media (prefers-reduced-motion: reduce){ .fade-in{ animation:none; } }
+
+  .topbar{ position:sticky; top:0; z-index:20; background:rgba(255,255,255,.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--line); }
+  .topbar-inner{ display:flex; align-items:center; justify-content:space-between; height:56px; padding:0 16px; }
+  .topbar-left{ display:flex; align-items:center; gap:8px; min-width:0; }
+  .icon-btn{ border:none; background:none; padding:8px; border-radius:999px; cursor:pointer; display:flex; align-items:center; }
+  .icon-btn:active{ background:var(--green-100); }
+  .icon-btn.active{ background:var(--green-100); }
+  .title{ font-weight:700; font-size:18px; color:var(--green-900); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .avatar-btn{ margin-left:4px; display:flex; align-items:center; gap:6px; padding:4px 6px 4px 8px; border-radius:999px; border:1px solid var(--line); background:white; cursor:pointer; }
+  .avatar{ width:24px; height:24px; border-radius:999px; background:var(--green-600); color:white; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+
+  .btn-primary{ width:100%; display:flex; align-items:center; justify-content:center; gap:8px; border:none; border-radius:12px; padding:14px; font-weight:700; font-size:15px; color:white; background:var(--green-600); cursor:pointer; }
+  .btn-primary:active{ transform:scale(0.98); }
+  .btn-primary:disabled{ opacity:.4; cursor:default; }
+  .btn-google{ width:100%; display:flex; align-items:center; justify-content:center; gap:12px; border:1px solid var(--line); border-radius:12px; padding:14px; font-weight:500; font-size:15px; background:white; color:var(--ink); cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,.04); }
+  .btn-google:active{ transform:scale(0.98); }
+
+  .card{ background:white; border:1px solid var(--line); border-radius:16px; padding:16px; }
+  .error-box{ margin-top:12px; font-size:14px; border-radius:10px; padding:10px 12px; background:var(--red-bg); color:var(--red); }
+
+  .dropzone{ width:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; border:2px dashed var(--line); border-radius:12px; padding:32px 12px; background:none; cursor:pointer; }
+  .dropzone:active{ background:var(--green-50); }
+  .preview-wrap{ position:relative; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  .preview-wrap img{ width:100%; max-height:220px; object-fit:contain; background:white; display:block; }
+  .preview-clear{ position:absolute; top:8px; right:8px; background:rgba(0,0,0,.6); border:none; border-radius:999px; padding:6px; cursor:pointer; display:flex; }
+  .preview-recrop{ position:absolute; bottom:8px; left:8px; background:rgba(0,0,0,.6); color:white; border:none; border-radius:999px; padding:6px 12px; font-size:12px; font-weight:600; cursor:pointer; }
+
+  .crop-modal{ position:fixed; inset:0; z-index:100; background:rgba(10,20,15,.95); display:none; flex-direction:column; padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom); }
+  .crop-image-wrap{ flex:1; min-height:0; display:flex; align-items:center; justify-content:center; overflow:hidden; padding:12px; }
+  .crop-image-wrap img{ max-width:100%; display:block; }
+  .crop-toolbar{ flex-shrink:0; padding:12px 16px 18px; background:#0f2e1d; }
+  .crop-ratio-group{ display:flex; gap:8px; justify-content:center; margin-bottom:14px; flex-wrap:wrap; }
+  .crop-ratio-btn{ border:1px solid rgba(255,255,255,.25); background:transparent; color:white; border-radius:999px; padding:7px 14px; font-size:13px; cursor:pointer; }
+  .crop-ratio-btn.active{ background:var(--green-600); border-color:var(--green-600); font-weight:700; }
+  .crop-actions{ display:flex; align-items:center; gap:10px; }
+  .crop-icon-btn{ border:1px solid rgba(255,255,255,.25); background:transparent; color:white; border-radius:999px; width:42px; height:42px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
+  .crop-cancel-btn{ flex:1; border:1px solid rgba(255,255,255,.25); background:transparent; color:white; border-radius:12px; padding:12px; font-weight:600; cursor:pointer; }
+  .crop-confirm-btn{ flex:1; border:none; background:var(--green-600); color:white; border-radius:12px; padding:12px; font-weight:700; cursor:pointer; }
+
+  textarea{ width:100%; resize:none; outline:none; border:none; font-size:15px; line-height:1.6; font-family:inherit; }
+  textarea::placeholder{ color:#9ca3af; }
+
+  .rail{ position:relative; padding-left:0; }
+  .rail::before{ content:""; position:absolute; left:15px; top:6px; bottom:6px; width:2px; background:linear-gradient(to bottom, var(--green-500), var(--line)); border-radius:2px; }
+  .step{ position:relative; padding-left:40px; padding-bottom:24px; }
+  .step:last-child{ padding-bottom:0; }
+  .step-badge{ position:absolute; left:0; top:0; width:32px; height:32px; border-radius:999px; background:var(--green-600); color:white; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; }
+  .step-card{ background:white; border:1px solid var(--line); border-radius:12px; padding:14px; }
+  .step-title{ font-weight:700; font-size:15px; color:var(--green-900); margin:0 0 4px; }
+  .step-content{ font-size:14px; line-height:1.6; margin:0; white-space:pre-wrap; }
+  .concept-toggle{ margin-top:10px; display:inline-flex; align-items:center; gap:6px; border:none; border-radius:999px; padding:6px 12px; font-size:12px; font-weight:600; cursor:pointer; background:var(--green-100); color:var(--green-700); }
+  .concept-toggle.open{ background:var(--green-600); color:white; }
+  .concept-box{ margin-top:10px; border-radius:10px; padding:12px; font-size:13.5px; line-height:1.6; background:var(--green-50); border:1px solid var(--line); }
+  .concept-box .concept-name{ font-weight:700; color:var(--green-700); margin-bottom:4px; }
+
+  .problem-box{ border-radius:12px; padding:16px; background:var(--green-900); margin-bottom:20px; }
+  .problem-box .label{ font-size:11px; font-weight:600; color:rgba(255,255,255,.8); margin-bottom:4px; }
+  .problem-box p{ color:white; font-size:14.5px; line-height:1.6; margin:0; }
+  .answer-box{ margin-top:8px; border-radius:12px; padding:16px; background:var(--green-100); border:1px solid var(--green-500); display:flex; gap:10px; align-items:flex-start; }
+  .answer-box .label{ font-size:11px; font-weight:700; color:var(--green-700); }
+  .answer-box .value{ font-weight:700; font-size:15px; color:var(--green-900); }
+
+  .hist-item{ width:100%; text-align:left; background:white; border:1px solid var(--line); border-radius:12px; padding:14px; cursor:pointer; margin-bottom:10px; }
+  .hist-item:active{ background:var(--green-50); }
+  .hist-date{ font-size:11px; color:var(--muted); margin-bottom:4px; }
+  .hist-problem{ font-size:14.5px; font-weight:500; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+  .hist-answer{ font-size:12.5px; color:var(--green-700); margin-top:4px; }
+
+  .empty{ text-align:center; padding:64px 24px 0; color:var(--muted); }
+  .center-loading{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:96px 0; color:var(--muted); font-size:14px; }
+  .spin{ animation:spin 1s linear infinite; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .login-screen, .settings-screen{ min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; }
+  .logo-badge{ width:64px; height:64px; border-radius:20px; background:var(--green-600); display:flex; align-items:center; justify-content:center; margin-bottom:20px; }
+  .h1{ font-size:30px; font-weight:700; color:var(--green-900); margin:0 0 8px; text-align:center; }
+  .sub{ font-size:14px; color:var(--muted); margin:0 0 32px; text-align:center; line-height:1.6; }
+  .note{ font-size:11px; color:var(--muted); margin-top:24px; text-align:center; line-height:1.6; }
+  .key-input{ width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:10px; font-size:14px; margin-bottom:12px; font-family:inherit; }
+  .link{ color:var(--green-700); text-decoration:underline; }
+
+  .home-pad, .sol-pad, .hist-pad{ padding:20px 16px 96px; }
+  .section-title{ font-size:20px; font-weight:700; color:var(--green-900); margin:0 0 4px; }
+  .section-sub{ font-size:14px; color:var(--muted); margin:0 0 20px; }
+  .field-label{ font-size:12px; font-weight:600; color:var(--muted); display:block; margin-bottom:6px; }
+</style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <div id="cropModal" class="crop-modal">
+    <div class="crop-image-wrap"><img id="cropImage" src="" alt="자르기" /></div>
+    <div class="crop-toolbar">
+      <div class="crop-ratio-group">
+        <button class="crop-ratio-btn" data-ratio="free">자유롭게</button>
+        <button class="crop-ratio-btn" data-ratio="1">1:1</button>
+        <button class="crop-ratio-btn" data-ratio="0.75">3:4</button>
+        <button class="crop-ratio-btn" data-ratio="1.3333">4:3</button>
+      </div>
+      <div class="crop-actions">
+        <button id="cropRotateBtn" class="crop-icon-btn" aria-label="회전" type="button">⟳</button>
+        <button id="cropCancelBtn" class="crop-cancel-btn" type="button">취소</button>
+        <button id="cropConfirmBtn" class="crop-confirm-btn" type="button">이만큼 사용</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    /* ============================================================
+       수학 풀이 — 정적 사이트 (GitHub Pages 배포용, 빌드 도구 없음)
+       - 로그인: Firebase Authentication (Google 전용)
+       - 기록 저장: Firestore (계정별 users/{uid}/solutions)
+       - 풀이 생성: Google Gemini API (무료 요금제, 브라우저에서 직접 호출)
+       ============================================================ */
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import {
+      getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut
+    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+    import {
+      getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+    /* --------------------------------------------------------------
+       1) 아래 firebaseConfig 값을 본인 Firebase 프로젝트 값으로 바꾸세요.
+       Firebase 콘솔 > 프로젝트 설정 > 일반 > 내 앱(웹) 에서 복사합니다.
+       이 값들은 공개되어도 안전하도록 설계된 값입니다 (비밀키 아님).
+       실제 보안은 Firestore 규칙과 Firebase Authentication 설정이 담당합니다.
+    -------------------------------------------------------------- */
+    const firebaseConfig = {
+      apiKey: "YOUR_FIREBASE_API_KEY",
+      authDomain: "your-project.firebaseapp.com",
+      projectId: "your-project",
+      storageBucket: "your-project.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID",
+    };
+
+    const firebaseApp = initializeApp(firebaseConfig);
+    const auth = getAuth(firebaseApp);
+    const googleProvider = new GoogleAuthProvider();
+    const db = getFirestore(firebaseApp);
+
+    // 무료 요금제로 시도해볼 수 있는 모델들. 구글 쪽 정책 변경으로 목록/무료 여부가
+    // 바뀔 수 있으니, 오류가 나면 다른 모델로 바꿔보세요. 최신 정보: https://ai.google.dev
+    const AVAILABLE_MODELS = [
+      { id: "gemini-2.0-flash", label: "Gemini 2.0 Flash (기본, 빠름)" },
+      { id: "gemini-2.5-flash", label: "Gemini 2.5 Flash (추론 강화, 더 정확할 수 있음)" },
+      { id: "gemini-1.5-flash", label: "Gemini 1.5 Flash (구버전, 대안용)" },
+    ];
+
+    /* --------------------------------------------------------------
+       상태
+    -------------------------------------------------------------- */
+    const state = {
+      geminiKey: localStorage.getItem("gemini_api_key") || "",
+      geminiModel: localStorage.getItem("gemini_model") || AVAILABLE_MODELS[0].id,
+      user: null,
+      authLoading: true,
+      viewStack: ["home"],
+      loading: false,
+      errorMsg: "",
+      solution: null,
+      historyItems: [],
+      historyLoading: false,
+      pendingText: "",
+      pendingFile: null,
+      pendingRawFile: null,
+      pendingPreviewUrl: null,
+      expandedStepIdx: null,
+      loginError: "",
+    };
+
+    const app = document.getElementById("app");
+    const currentView = () => state.viewStack[state.viewStack.length - 1];
+
+    /* --------------------------------------------------------------
+       아이콘 (인라인 SVG, 외부 아이콘 라이브러리 없이 가볍게)
+    -------------------------------------------------------------- */
+    const icon = {
+      sparkles: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"/><path d="M5 17l.8 2.2L8 20l-2.2.8L5 23l-.8-2.2L2 20l2.2-.8L5 17z"/></svg>`,
+      chevronLeft: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>`,
+      history: `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13a9 9 0 1 0 2.12-6.36L3 8"/><path d="M12 7v5l4 2"/></svg>`,
+      home: `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>`,
+      settings: `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z"/></svg>`,
+      camera: `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>`,
+      x: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>`,
+      help: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 1 1 5.83 1c0 2-3 2-3 4"/><line x1="12" y1="17" x2="12" y2="17.01"/></svg>`,
+      check: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>`,
+      loader: `<svg class="spin" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.22-8.56"/></svg>`,
+      plus: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`,
+    };
+
+    function escapeHtml(str) {
+      return (str || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+
+    /* --------------------------------------------------------------
+       Gemini API 호출
+    -------------------------------------------------------------- */
+    function buildPrompt(text) {
+      return `너는 한국의 중학교부터 대학교까지의 수학을 모두 가르칠 수 있는 매우 꼼꼼한 수학 선생님이다.
+계산 실수를 절대 하면 안 된다는 마음으로, 각 단계의 산술·기호 조작을 서두르지 말고 하나씩 손으로 짚어가듯 검토하며 풀어라.
+사용자가 아래에 제시한 문제(텍스트 또는 첨부된 사진)를 분석해서, 필요하면 중고등학교 개념까지 함께 활용해 논리적인 단계로 나누어 풀이하라.
+
+반드시 아래 순서로 생각하라:
+1. 문제를 정확히 파악한다 (사진이 있다면 숫자와 기호를 다시 한번 확인한다).
+2. steps를 하나씩 만들면서, 각 단계마다 바로 앞 단계의 결과를 다시 확인한다.
+3. 최종 답이 나오면, verification 단계에서 답을 원래 문제식에 대입하거나 다른 방법으로 다시 계산해서 반드시 검증한다.
+4. 검증 중 오차나 오류를 발견하면, 절대 그대로 넘어가지 말고 steps와 answer를 고쳐서 다시 쓴다. 검증을 통과한 값만 최종 answer로 낸다.
+
+반드시 아래 JSON 형식으로만 응답하라. 그 외의 설명, 인사말, 마크다운 코드블록 기호는 절대 포함하지 마라.
+
+{
+  "problem": "문제를 한두 문장으로 정확히 요약",
+  "steps": [
+    {
+      "title": "1단계처럼 짧은 단계 제목",
+      "content": "이 단계에서 하는 계산과 그 이유를 자세하지만 간결하게 설명 (2~4문장)",
+      "concept": {
+        "name": "이 단계에 필요한 핵심 개념 이름",
+        "explanation": "그 개념을 처음 배우는 사람도 이해할 수 있도록 쉬운 말로 설명 (2~4문장)"
+      }
+    }
+  ],
+  "verification": "최종 답을 원래 문제에 대입하거나 다른 방법으로 재검증한 과정과 결과를 설명 (검증에서 오류를 찾았다면 그것을 고친 내용도 포함)",
+  "answer": "검증을 통과한 최종 답 (간결하게)"
+}
+
+steps 배열은 보통 3~6개이며, 각 항목은 빠짐없이 concept을 포함해야 한다.
+문제: ${text && text.trim() ? text.trim() : "(첨부된 사진 속 문제를 참고)"}`;
+    }
+
+    async function solveWithGemini({ text, imageBase64, imageMediaType }) {
+      const key = state.geminiKey;
+      if (!key) throw new Error("Gemini API 키가 설정되지 않았습니다.");
+
+      const parts = [{ text: buildPrompt(text) }];
+      if (imageBase64) {
+        parts.push({ inline_data: { mime_type: imageMediaType || "image/jpeg", data: imageBase64 } });
+      }
+
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${state.geminiModel}:generateContent?key=${encodeURIComponent(key)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts }],
+            generationConfig: {
+              responseMimeType: "application/json",
+              temperature: 0, // 정확한 계산이 목표라서 무작위성을 최소화
+            },
+          }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        if (res.status === 429 || data?.error?.status === "RESOURCE_EXHAUSTED") {
+          throw new Error("무료 요청 한도에 도달했어요. 1분 정도 기다렸다가 다시 시도해보세요. (설정에서 다른 모델로 바꿔볼 수도 있어요)");
+        }
+        throw new Error(data?.error?.message || "Gemini API 오류가 발생했습니다.");
+      }
+
+      const textOut = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!textOut) throw new Error("풀이를 생성하지 못했습니다. 다시 시도해주세요.");
+
+      const cleaned = textOut.replace(/```json/gi, "").replace(/```/g, "").trim();
+      try {
+        return JSON.parse(cleaned);
+      } catch (e) {
+        throw new Error("풀이 형식을 해석하지 못했습니다. 다시 시도해주세요.");
+      }
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(",")[1]);
+        reader.onerror = () => reject(new Error("파일을 읽지 못했습니다."));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    /* --------------------------------------------------------------
+       내비게이션
+    -------------------------------------------------------------- */
+    function goTo(v) {
+      if (currentView() !== v) state.viewStack.push(v);
+      render();
+    }
+    function goBack() {
+      if (state.viewStack.length > 1) state.viewStack.pop();
+      render();
+    }
+    function goHome() {
+      state.viewStack = ["home"];
+      render();
+    }
+
+    /* iOS 스타일 엣지 스와이프로 뒤로 가기 */
+    let touchStartX = null, touchStartY = null;
+    window.addEventListener("touchstart", (e) => {
+      const t = e.touches[0];
+      if (t.clientX < 24) { touchStartX = t.clientX; touchStartY = t.clientY; }
+      else touchStartX = null;
+    }, { passive: true });
+    window.addEventListener("touchend", (e) => {
+      if (touchStartX == null) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - touchStartX;
+      const dy = Math.abs(t.clientY - (touchStartY || 0));
+      if (dx > 70 && dy < 60) goBack();
+      touchStartX = null;
+    }, { passive: true });
+
+    /* --------------------------------------------------------------
+       Firebase 인증
+    -------------------------------------------------------------- */
+    onAuthStateChanged(auth, (u) => {
+      state.user = u;
+      state.authLoading = false;
+      render();
+    });
+
+    async function handleGoogleLogin() {
+      state.loginError = "";
+      try {
+        await signInWithPopup(auth, googleProvider);
+      } catch (e) {
+        state.loginError = "로그인에 실패했어요. 다시 시도해주세요.";
+        render();
+      }
+    }
+    async function handleLogout() {
+      await signOut(auth);
+      state.viewStack = ["home"];
+      state.solution = null;
+      render();
+    }
+
+    /* --------------------------------------------------------------
+       핵심 동작: 풀이 요청 / 기록 저장·불러오기
+    -------------------------------------------------------------- */
+    async function handleSolve() {
+      state.loading = true;
+      state.errorMsg = "";
+      state.solution = null;
+      state.expandedStepIdx = null;
+      goTo("solution");
+      try {
+        let imageBase64 = null, imageMediaType = null;
+        if (state.pendingFile) {
+          imageBase64 = await fileToBase64(state.pendingFile);
+          imageMediaType = state.pendingFile.type || "image/jpeg";
+        }
+        const result = await solveWithGemini({ text: state.pendingText, imageBase64, imageMediaType });
+        state.solution = result;
+
+        if (state.user) {
+          await addDoc(collection(db, "users", state.user.uid, "solutions"), {
+            problem: result.problem,
+            answer: result.answer,
+            steps: result.steps,
+            verification: result.verification || "",
+            createdAt: serverTimestamp(),
+          });
+        }
+      } catch (e) {
+        state.errorMsg = e.message || "풀이 중 오류가 발생했습니다. 다시 시도해주세요.";
+      } finally {
+        state.loading = false;
+        state.pendingText = "";
+        state.pendingFile = null;
+        state.pendingPreviewUrl = null;
+        render();
+      }
+    }
+
+    async function loadHistory() {
+      if (!state.user) return;
+      state.historyLoading = true;
+      render();
+      try {
+        const q = query(collection(db, "users", state.user.uid, "solutions"), orderBy("createdAt", "desc"));
+        const snap = await getDocs(q);
+        state.historyItems = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      } catch (e) {
+        state.historyItems = [];
+      } finally {
+        state.historyLoading = false;
+        render();
+      }
+    }
+
+    function openHistoryItem(id) {
+      const item = state.historyItems.find((h) => h.id === id);
+      if (!item) return;
+      state.solution = { problem: item.problem, answer: item.answer, steps: item.steps, verification: item.verification };
+      state.expandedStepIdx = null;
+      goTo("solution");
+    }
+
+    /* --------------------------------------------------------------
+       렌더 — 화면 조각들
+    -------------------------------------------------------------- */
+    function renderSettingsScreen() {
+      return `
+        <div class="settings-screen fade-in wrap">
+          <div class="logo-badge">${icon.sparkles.replace("currentColor", "white")}</div>
+          <h1 class="h1">수학 풀이</h1>
+          <p class="sub">문제를 풀려면 무료 Gemini API 키가 필요해요.<br/>딱 한 번만 입력하면 이 브라우저에 저장돼요.</p>
+          <input id="apiKeyInput" class="key-input" type="password" placeholder="Gemini API 키를 붙여넣으세요" />
+          <button id="saveKeyBtn" class="btn-primary">키 저장하고 시작하기</button>
+          <p class="note">
+            무료 키 발급: <a class="link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a>에서
+            Google 계정으로 로그인 후 발급받으세요.<br/>
+            (링크가 바뀌었다면 "Gemini API 키 발급"으로 검색해보세요.)<br/><br/>
+            이 키는 이 브라우저의 로컬 저장소에만 저장되고, GitHub 코드에는 저장되지 않아요.
+          </p>
+        </div>`;
+    }
+
+    function renderLoginScreen() {
+      return `
+        <div class="login-screen fade-in wrap">
+          <div class="logo-badge">${icon.sparkles.replace("currentColor", "white")}</div>
+          <h1 class="h1">수학 풀이</h1>
+          <p class="sub">중고등학교 개념부터 대학 수학까지,<br/>사진 한 장으로 풀이 과정을 확인하세요.</p>
+          <button id="googleLoginBtn" class="btn-google">
+            <svg width="20" height="20" viewBox="0 0 48 48">
+              <path fill="#FFC107" d="M43.6 20.5H42V20.5H24v7h11.3C33.9 31.5 29.4 35 24 35c-6.1 0-11-4.9-11-11s4.9-11 11-11c2.8 0 5.3 1 7.3 2.7l5-5C33.1 7.9 28.8 6 24 6 13.5 6 5 14.5 5 25s8.5 19 19 19s19-8.5 19-19c0-1.2-.1-2.4-.4-3.5z"/>
+              <path fill="#FF3D00" d="M6.3 14.7l5.7 4.2C13.6 15 18.4 12 24 12c2.8 0 5.3 1 7.3 2.7l5-5C33.1 7.9 28.8 6 24 6c-7.5 0-13.9 4.3-17.7 8.7z"/>
+              <path fill="#4CAF50" d="M24 44c5.3 0 10.1-1.8 13.8-4.9l-6.4-5.4C29.4 35.4 26.8 36 24 36c-5.4 0-9.9-3.4-11.6-8.2l-5.9 4.5C9.9 39.6 16.4 44 24 44z"/>
+              <path fill="#1976D2" d="M43.6 20.5H42V20.5H24v7h11.3c-1 3-3 5.5-5.9 7.1l6.4 5.4C39.6 37.1 43 31.6 43 25c0-1.2-.1-2.4-.4-3.5z"/>
+            </svg>
+            Google로 로그인
+          </button>
+          ${state.loginError ? `<p class="error-box" style="margin-top:12px;">${escapeHtml(state.loginError)}</p>` : ""}
+          <p class="note">이 서비스는 Google 계정으로만 로그인할 수 있어요.</p>
+        </div>`;
+    }
+
+    function renderTopBar() {
+      const v = currentView();
+      const initial = escapeHtml((state.user?.displayName || "U")[0]);
+      const photo = state.user?.photoURL
+        ? `<img src="${state.user.photoURL}" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;" />`
+        : initial;
+      return `
+        <div class="topbar">
+          <div class="topbar-inner wrap">
+            <div class="topbar-left">
+              ${v !== "home" ? `<button class="icon-btn" data-action="back" aria-label="뒤로 가기">${icon.chevronLeft}</button>` : `<span style="color:var(--green-600);display:flex;">${icon.sparkles}</span>`}
+              <span class="title">수학 풀이</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:2px;">
+              <button class="icon-btn ${v === "settings" ? "active" : ""}" data-action="goSettings" aria-label="설정" style="color:var(--green-700)">${icon.settings}</button>
+              <button class="icon-btn ${v === "history" ? "active" : ""}" data-action="goHistory" aria-label="기록" style="color:var(--green-700)">${icon.history}</button>
+              <button class="icon-btn ${v === "home" ? "active" : ""}" data-action="goHome" aria-label="홈" style="color:var(--green-700)">${icon.home}</button>
+              <button class="icon-btn" data-action="logout" aria-label="로그아웃" style="color:var(--green-700)" title="로그아웃">
+                <span class="avatar">${photo}</span>
+              </button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function renderHome() {
+      const preview = state.pendingPreviewUrl
+        ? `<div class="preview-wrap">
+             <img src="${state.pendingPreviewUrl}" alt="업로드한 문제" />
+             <button class="preview-recrop" data-action="recropFile" type="button">✂️ 다시 자르기</button>
+             <button class="preview-clear" data-action="clearFile" aria-label="사진 지우기">${icon.x.replace(/currentColor/g, "white")}</button>
+           </div>`
+        : `<button class="dropzone" data-action="pickFile" type="button">
+             <span style="color:var(--green-600); display:flex;">${icon.camera}</span>
+             <span style="font-size:14px; font-weight:600; color:var(--green-700);">문제 사진 찍기 / 업로드</span>
+             <span style="font-size:12px; color:var(--muted);">JPG, PNG 지원</span>
+           </button>`;
+
+      const canSubmit = (state.pendingText.trim().length > 0 || state.pendingFile) && !state.loading;
+
+      return `
+        <div class="wrap home-pad fade-in">
+          <h2 class="section-title">어떤 문제를 풀어볼까요?</h2>
+          <p class="section-sub">중학교부터 대학교까지, 사진이나 텍스트로 물어보세요.</p>
+
+          <div class="card" style="margin-bottom:16px;">${preview}</div>
+          <input id="fileInput" type="file" accept="image/*" capture="environment" style="display:none" />
+
+          <div class="card">
+            <label class="field-label">직접 입력 (사진 대신, 또는 보충 설명)</label>
+            <textarea id="problemText" rows="4" placeholder="예: 함수 f(x)=x^3-3x+1 의 극값을 구하시오">${escapeHtml(state.pendingText)}</textarea>
+          </div>
+
+          ${state.errorMsg && currentView() === "home" ? `<div class="error-box">${escapeHtml(state.errorMsg)}</div>` : ""}
+
+          <div style="margin-top:20px;">
+            <button id="solveBtn" class="btn-primary" ${canSubmit ? "" : "disabled"}>
+              ${state.loading ? `<span style="display:flex;">${icon.loader}</span> 풀이 중...` : `${icon.plus} 풀이 시작`}
+            </button>
+          </div>
+        </div>`;
+    }
+
+    function renderStep(step, index) {
+      const expanded = state.expandedStepIdx === index;
+      const conceptBtn = step.concept
+        ? `<button class="concept-toggle ${expanded ? "open" : ""}" data-action="toggleConcept" data-idx="${index}">
+             ${icon.help} ${expanded ? "개념 설명 닫기" : "이 부분이 이해 안 돼요"}
+           </button>
+           ${expanded ? `
+             <div class="concept-box fade-in">
+               <div class="concept-name">📘 개념 · ${escapeHtml(step.concept.name)}</div>
+               <p style="margin:0;">${escapeHtml(step.concept.explanation)}</p>
+             </div>` : ""}`
+        : "";
+
+      return `
+        <div class="step">
+          <div class="step-badge mono">${index + 1}</div>
+          <div class="step-card">
+            <h3 class="step-title">${escapeHtml(step.title)}</h3>
+            <p class="step-content">${escapeHtml(step.content)}</p>
+            ${conceptBtn}
+          </div>
+        </div>`;
+    }
+
+    function renderSolution() {
+      if (state.loading) {
+        return `<div class="center-loading">${icon.loader} <p style="margin:0;">문제를 분석하고 있어요...</p></div>`;
+      }
+      if (state.errorMsg) {
+        return `<div class="wrap" style="padding:40px 16px 0;"><div class="error-box">${escapeHtml(state.errorMsg)}</div></div>`;
+      }
+      if (!state.solution) return "";
+      const steps = (state.solution.steps || []).map((s, i) => renderStep(s, i)).join("");
+      return `
+        <div class="wrap sol-pad fade-in">
+          <div class="problem-box">
+            <div class="label">문제</div>
+            <p>${escapeHtml(state.solution.problem)}</p>
+          </div>
+          <div class="rail">${steps}</div>
+          ${state.solution.verification ? `
+            <button class="concept-toggle ${state.expandedStepIdx === "verify" ? "open" : ""}" data-action="toggleVerify" style="margin-bottom:10px;">
+              ${icon.check} ${state.expandedStepIdx === "verify" ? "검증 과정 닫기" : "✓ 자체 검증 과정 보기"}
+            </button>
+            ${state.expandedStepIdx === "verify" ? `
+              <div class="concept-box fade-in" style="margin-bottom:14px;">
+                <div class="concept-name">🔍 검증</div>
+                <p style="margin:0;">${escapeHtml(state.solution.verification)}</p>
+              </div>` : ""}
+          ` : ""}
+          <div class="answer-box">
+            <span style="color:var(--green-700); margin-top:2px;">${icon.check}</span>
+            <div>
+              <div class="label">최종 답</div>
+              <div class="value mono">${escapeHtml(state.solution.answer)}</div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function renderHistory() {
+      if (state.historyLoading) {
+        return `<div class="center-loading">${icon.loader}</div>`;
+      }
+      if (state.historyItems.length === 0) {
+        return `
+          <div class="empty wrap">
+            <div style="color:var(--green-500); display:flex; justify-content:center; margin-bottom:12px;">${icon.history}</div>
+            <p style="font-weight:600; color:var(--green-900); margin:0 0 4px;">아직 푼 문제가 없어요</p>
+            <p style="font-size:14px; margin:0;">홈에서 문제를 올리면 여기 기록이 쌓여요.</p>
+          </div>`;
+      }
+      const items = state.historyItems.map((item) => {
+        const date = item.createdAt?.toDate ? item.createdAt.toDate().toLocaleString("ko-KR") : "";
+        return `
+          <button class="hist-item" data-action="openHistory" data-id="${item.id}">
+            <div class="hist-date">${date}</div>
+            <div class="hist-problem">${escapeHtml(item.problem)}</div>
+            <div class="hist-answer mono">답: ${escapeHtml(item.answer)}</div>
+          </button>`;
+      }).join("");
+      return `
+        <div class="wrap hist-pad fade-in">
+          <h2 class="section-title" style="margin-bottom:14px;">내가 물어본 문제들</h2>
+          ${items}
+        </div>`;
+    }
+
+    function renderSettings() {
+      const modelOptions = AVAILABLE_MODELS.map(
+        (m) => `<option value="${m.id}" ${m.id === state.geminiModel ? "selected" : ""}>${escapeHtml(m.label)}</option>`
+      ).join("");
+      const maskedKey = state.geminiKey ? state.geminiKey.slice(0, 4) + "••••••••" + state.geminiKey.slice(-4) : "";
+      return `
+        <div class="wrap home-pad fade-in">
+          <h2 class="section-title">설정</h2>
+          <p class="section-sub">API 키와 모델을 바꿀 수 있어요. 모델을 바꿔보면 정확도나 요청 제한이 달라질 수 있어요.</p>
+
+          <div class="card" style="margin-bottom:14px;">
+            <label class="field-label">현재 Gemini API 키</label>
+            <input id="settingsKeyInput" class="key-input" type="password" placeholder="${maskedKey || "API 키를 입력하세요"}" />
+          </div>
+
+          <div class="card" style="margin-bottom:14px;">
+            <label class="field-label">사용할 모델</label>
+            <select id="settingsModelSelect" class="key-input" style="margin-bottom:0;">${modelOptions}</select>
+          </div>
+
+          <button id="saveSettingsBtn" class="btn-primary" style="margin-bottom:10px;">설정 저장</button>
+          <button id="resetKeyBtn" class="btn-google">API 키 삭제하고 처음부터 다시 설정</button>
+
+          <p class="note" style="text-align:left; line-height:1.7;">
+            💡 정확도가 자꾸 떨어지면: 다른 모델로 바꿔서 같은 문제를 다시 풀어보세요.<br/>
+            💡 "요청 한도" 오류가 자주 뜨면: 1분 정도 쉬었다가 다시 시도하거나, 다른 모델을 선택해보세요.<br/>
+            💡 키는 이 브라우저에만 저장돼요. 다른 기기에서 쓰려면 그 기기에서도 키를 입력해야 해요.
+          </p>
+        </div>`;
+    }
+
+    /* --------------------------------------------------------------
+       메인 렌더
+    -------------------------------------------------------------- */
+    function render() {
+      if (!state.geminiKey) {
+        app.innerHTML = renderSettingsScreen();
+        return;
+      }
+      if (state.authLoading) {
+        app.innerHTML = `<div class="center-loading" style="min-height:100vh;">${icon.loader}</div>`;
+        return;
+      }
+      if (!state.user) {
+        app.innerHTML = renderLoginScreen();
+        return;
+      }
+
+      const v = currentView();
+      let body = "";
+      if (v === "home") body = renderHome();
+      else if (v === "solution") body = renderSolution();
+      else if (v === "history") body = renderHistory();
+      else if (v === "settings") body = renderSettings();
+
+      app.innerHTML = renderTopBar() + body;
+    }
+
+    /* --------------------------------------------------------------
+       이벤트 위임 (버튼 클릭 / 입력 / 파일 선택)
+    -------------------------------------------------------------- */
+    app.addEventListener("click", (e) => {
+      const target = e.target.closest("[data-action], #saveKeyBtn, #googleLoginBtn, #solveBtn, #saveSettingsBtn, #resetKeyBtn");
+      if (!target) return;
+
+      if (target.id === "saveKeyBtn") {
+        const val = document.getElementById("apiKeyInput").value.trim();
+        if (!val) return;
+        state.geminiKey = val;
+        localStorage.setItem("gemini_api_key", val);
+        render();
+        return;
+      }
+      if (target.id === "saveSettingsBtn") {
+        const keyVal = document.getElementById("settingsKeyInput").value.trim();
+        const modelVal = document.getElementById("settingsModelSelect").value;
+        if (keyVal) {
+          state.geminiKey = keyVal;
+          localStorage.setItem("gemini_api_key", keyVal);
+        }
+        state.geminiModel = modelVal;
+        localStorage.setItem("gemini_model", modelVal);
+        goBack();
+        return;
+      }
+      if (target.id === "resetKeyBtn") {
+        state.geminiKey = "";
+        localStorage.removeItem("gemini_api_key");
+        state.viewStack = ["home"];
+        render();
+        return;
+      }
+      if (target.id === "googleLoginBtn") { handleGoogleLogin(); return; }
+      if (target.id === "solveBtn") { if (!target.disabled) handleSolve(); return; }
+
+      const action = target.dataset.action;
+      if (action === "back") goBack();
+      else if (action === "goHome") goHome();
+      else if (action === "goHistory") { goTo("history"); loadHistory(); }
+      else if (action === "goSettings") goTo("settings");
+      else if (action === "logout") handleLogout();
+      else if (action === "pickFile") document.getElementById("fileInput").click();
+      else if (action === "clearFile") {
+        state.pendingFile = null;
+        state.pendingRawFile = null;
+        state.pendingPreviewUrl = null;
+        render();
+      }
+      else if (action === "recropFile") {
+        if (state.pendingRawFile) openCropModal(state.pendingRawFile);
+      }
+      else if (action === "toggleConcept") {
+        const idx = Number(target.dataset.idx);
+        state.expandedStepIdx = state.expandedStepIdx === idx ? null : idx;
+        render();
+      }
+      else if (action === "openHistory") openHistoryItem(target.dataset.id);
+      else if (action === "toggleVerify") {
+        state.expandedStepIdx = state.expandedStepIdx === "verify" ? null : "verify";
+        render();
+      }
+    });
+
+    app.addEventListener("input", (e) => {
+      if (e.target.id === "problemText") {
+        state.pendingText = e.target.value; // 재렌더 없이 값만 저장 (커서 유지)
+      }
+    });
+
+    app.addEventListener("change", (e) => {
+      if (e.target.id === "fileInput" && e.target.files?.[0]) {
+        openCropModal(e.target.files[0]);
+        e.target.value = ""; // 같은 파일을 다시 선택해도 change가 발생하도록 초기화
+      }
+    });
+
+    /* --------------------------------------------------------------
+       사진 자르기 모달 (Cropper.js) — render() 사이클과 분리된 고정 DOM
+    -------------------------------------------------------------- */
+    let cropperInstance = null;
+    const cropModalEl = document.getElementById("cropModal");
+    const cropImageEl = document.getElementById("cropImage");
+
+    function openCropModal(file) {
+      state.pendingRawFile = file;
+      const url = URL.createObjectURL(file);
+      cropImageEl.onload = () => {
+        if (cropperInstance) cropperInstance.destroy();
+        cropperInstance = new Cropper(cropImageEl, {
+          viewMode: 1,
+          dragMode: "move",
+          autoCropArea: 1,
+          background: false,
+          responsive: true,
+          checkOrientation: true,
+        });
+        document.querySelectorAll(".crop-ratio-btn").forEach((b) => b.classList.toggle("active", b.dataset.ratio === "free"));
+      };
+      cropImageEl.src = url;
+      cropModalEl.style.display = "flex";
+    }
+
+    function closeCropModal() {
+      cropModalEl.style.display = "none";
+      if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
+    }
+
+    document.querySelectorAll(".crop-ratio-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (!cropperInstance) return;
+        const r = btn.dataset.ratio === "free" ? NaN : parseFloat(btn.dataset.ratio);
+        cropperInstance.setAspectRatio(r);
+        document.querySelectorAll(".crop-ratio-btn").forEach((b) => b.classList.toggle("active", b === btn));
+      });
+    });
+
+    document.getElementById("cropRotateBtn").addEventListener("click", () => {
+      if (cropperInstance) cropperInstance.rotate(90);
+    });
+
+    document.getElementById("cropCancelBtn").addEventListener("click", () => {
+      // 이번이 첫 선택이었고 취소하면 아무 사진도 없는 상태로 되돌린다.
+      closeCropModal();
+    });
+
+    document.getElementById("cropConfirmBtn").addEventListener("click", () => {
+      if (!cropperInstance) return;
+      cropperInstance.getCroppedCanvas({ maxWidth: 1800, maxHeight: 1800 }).toBlob((blob) => {
+        if (!blob) return;
+        const croppedFile = new File([blob], "cropped.jpg", { type: "image/jpeg" });
+        state.pendingFile = croppedFile;
+        state.pendingPreviewUrl = URL.createObjectURL(blob);
+        closeCropModal();
+        render();
+      }, "image/jpeg", 0.92);
+    });
+
+    render();
+  </script>
+</body>
+</html>
