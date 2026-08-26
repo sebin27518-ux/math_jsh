@@ -219,7 +219,6 @@
       pendingText: "",
       pendingFile: null,
       pendingRawFile: null,
-      pendingThumbnail: null,
       pendingPreviewUrl: null,
       expandedStepIdx: null,
       loginError: "",
@@ -457,7 +456,6 @@ steps 배열은 보통 3~6개이며, 각 항목은 빠짐없이 concept을 포�
       state.errorMsg = "";
       state.solution = null;
       state.expandedStepIdx = null;
-      const thumbnailToSave = state.pendingThumbnail; // finally에서 초기화되기 전에 미리 붙잡아둠
       goTo("solution");
       try {
         let imageBase64 = null, imageMediaType = null;
@@ -466,7 +464,6 @@ steps 배열은 보통 3~6개이며, 각 항목은 빠짐없이 concept을 포�
           imageMediaType = state.pendingFile.type || "image/jpeg";
         }
         const result = await solveWithGemini({ text: state.pendingText, imageBase64, imageMediaType });
-        result.imageDataUrl = thumbnailToSave || null;
         state.solution = result;
 
         if (state.user) {
@@ -476,7 +473,6 @@ steps 배열은 보통 3~6개이며, 각 항목은 빠짐없이 concept을 포�
             steps: result.steps,
             verification: result.verification || "",
             graph: result.graph || null,
-            imageDataUrl: thumbnailToSave || null,
             createdAt: serverTimestamp(),
           });
         }
@@ -487,7 +483,6 @@ steps 배열은 보통 3~6개이며, 각 항목은 빠짐없이 concept을 포�
         state.pendingText = "";
         state.pendingFile = null;
         state.pendingPreviewUrl = null;
-        state.pendingThumbnail = null;
         render();
       }
     }
@@ -511,7 +506,7 @@ steps 배열은 보통 3~6개이며, 각 항목은 빠짐없이 concept을 포�
     function openHistoryItem(id) {
       const item = state.historyItems.find((h) => h.id === id);
       if (!item) return;
-      state.solution = { problem: item.problem, answer: item.answer, steps: item.steps, verification: item.verification, graph: item.graph || null, imageDataUrl: item.imageDataUrl || null };
+      state.solution = { problem: item.problem, answer: item.answer, steps: item.steps, verification: item.verification, graph: item.graph || null };
       state.expandedStepIdx = null;
       goTo("solution");
     }
@@ -774,10 +769,6 @@ steps 배열은 보통 3~6개이며, 각 항목은 빠짐없이 concept을 포�
       const steps = (state.solution.steps || []).map((s, i) => renderStep(s, i)).join("");
       return `
         <div class="wrap sol-pad fade-in">
-          ${state.solution.imageDataUrl ? `
-            <div class="card" style="margin-bottom:14px; padding:8px;">
-              <img src="${state.solution.imageDataUrl}" alt="내가 올린 사진" style="width:100%; max-height:200px; object-fit:contain; border-radius:8px; display:block;" />
-            </div>` : ""}
           <div class="problem-box">
             <div class="label">문제</div>
             <p>${escapeHtml(state.solution.problem)}</p>
@@ -820,14 +811,9 @@ steps 배열은 보통 3~6개이며, 각 항목은 빠짐없이 concept을 포�
         const date = item.createdAt?.toDate ? item.createdAt.toDate().toLocaleString("ko-KR") : "";
         return `
           <button class="hist-item" data-action="openHistory" data-id="${item.id}">
-            <div style="display:flex; gap:10px; align-items:flex-start;">
-              ${item.imageDataUrl ? `<img src="${item.imageDataUrl}" alt="" style="width:56px; height:56px; object-fit:cover; border-radius:8px; flex-shrink:0; border:1px solid var(--line);" />` : ""}
-              <div style="min-width:0; flex:1;">
-                <div class="hist-date">${date}</div>
-                <div class="hist-problem">${escapeHtml(item.problem)}</div>
-                <div class="hist-answer mono">답: ${escapeHtml(item.answer)}</div>
-              </div>
-            </div>
+            <div class="hist-date">${date}</div>
+            <div class="hist-problem">${escapeHtml(item.problem)}</div>
+            <div class="hist-answer mono">답: ${escapeHtml(item.answer)}</div>
           </button>`;
       }).join("");
       return `
@@ -982,7 +968,6 @@ steps 배열은 보통 3~6개이며, 각 항목은 빠짐없이 concept을 포�
         state.pendingFile = null;
         state.pendingRawFile = null;
         state.pendingPreviewUrl = null;
-        state.pendingThumbnail = null;
         render();
       }
       else if (action === "recropFile") {
@@ -1069,14 +1054,6 @@ steps 배열은 보통 3~6개이며, 각 항목은 빠짐없이 concept을 포�
         const croppedFile = new File([blob], "cropped.jpg", { type: "image/jpeg" });
         state.pendingFile = croppedFile;
         state.pendingPreviewUrl = URL.createObjectURL(blob);
-        // 기록에 함께 저장할 작은 썸네일 (Firestore 문서 용량을 아끼기 위해 축소)
-        try {
-          state.pendingThumbnail = cropperInstance
-            .getCroppedCanvas({ maxWidth: 480, maxHeight: 480 })
-            .toDataURL("image/jpeg", 0.6);
-        } catch (_) {
-          state.pendingThumbnail = null;
-        }
         closeCropModal();
         render();
       }, "image/jpeg", 0.92);
