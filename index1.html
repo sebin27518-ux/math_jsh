@@ -158,12 +158,13 @@
        실제 보안은 Firestore 규칙과 Firebase Authentication 설정이 담당합니다.
     -------------------------------------------------------------- */
     const firebaseConfig = {
-      apiKey: "YOUR_FIREBASE_API_KEY",
-      authDomain: "your-project.firebaseapp.com",
-      projectId: "your-project",
-      storageBucket: "your-project.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID",
+      apiKey: "AIzaSyAu-rBt32PbjzbJrdaDHjHZeT8xBfkdG2E",
+      authDomain: "math-c2fee.firebaseapp.com",
+      projectId: "math-c2fee",
+      storageBucket: "math-c2fee.firebasestorage.app",
+      messagingSenderId: "313836429963",
+      appId: "1:313836429963:web:9f8c8b7949058a0150ea8e",
+      measurementId: "G-E0X5QJE15R"
     };
 
     const firebaseApp = initializeApp(firebaseConfig);
@@ -174,28 +175,17 @@
     // 무료 요금제로 시도해볼 수 있는 모델들. 구글 쪽 정책 변경으로 목록/무료 여부가
     // 바뀔 수 있으니, 오류가 나면 다른 모델로 바꿔보세요. 최신 정보: https://ai.google.dev
     const AVAILABLE_MODELS = [
-      { id: "gemini-3.6-flash", label: "Gemini 3.6 Flash (기본, 최신)" },
-      { id: "gemini-2.5-flash", label: "Gemini 2.5 Flash (대안용)" },
+      { id: "gemini-2.0-flash", label: "Gemini 2.0 Flash (기본, 빠름)" },
+      { id: "gemini-2.5-flash", label: "Gemini 2.5 Flash (추론 강화, 더 정확할 수 있음)" },
+      { id: "gemini-1.5-flash", label: "Gemini 1.5 Flash (구버전, 대안용)" },
     ];
-    // 구글이 모델을 자주 교체해요. 로그인 후 "풀이 시작"을 눌렀을 때
-    // "model ... is no longer available" 같은 에러가 뜨면,
-    // 에러 메시지가 알려주는 새 모델 id를 위 배열에 추가하고 기본값으로 바꿔주세요.
-    const DEPRECATED_MODEL_FALLBACK = {
-      "gemini-2.0-flash": "gemini-3.6-flash",
-      "gemini-1.5-flash": "gemini-3.6-flash",
-    };
 
     /* --------------------------------------------------------------
        상태
     -------------------------------------------------------------- */
     const state = {
       geminiKey: localStorage.getItem("gemini_api_key") || "",
-      geminiModel: (() => {
-        const saved = localStorage.getItem("gemini_model");
-        if (saved && DEPRECATED_MODEL_FALLBACK[saved]) return DEPRECATED_MODEL_FALLBACK[saved];
-        if (saved && AVAILABLE_MODELS.some((m) => m.id === saved)) return saved;
-        return AVAILABLE_MODELS[0].id;
-      })(),
+      geminiModel: localStorage.getItem("gemini_model") || AVAILABLE_MODELS[0].id,
       user: null,
       authLoading: true,
       viewStack: ["home"],
@@ -299,9 +289,6 @@ steps 배열은 보통 3~6개이며, 각 항목은 빠짐없이 concept을 포�
       if (!res.ok) {
         if (res.status === 429 || data?.error?.status === "RESOURCE_EXHAUSTED") {
           throw new Error("무료 요청 한도에 도달했어요. 1분 정도 기다렸다가 다시 시도해보세요. (설정에서 다른 모델로 바꿔볼 수도 있어요)");
-        }
-        if (res.status === 404 || /no longer available|not found/i.test(data?.error?.message || "")) {
-          throw new Error("지금 선택된 모델이 더 이상 지원되지 않아요. 상단바의 설정(⚙️)에서 다른 모델로 바꿔보세요.");
         }
         throw new Error(data?.error?.message || "Gemini API 오류가 발생했습니다.");
       }
